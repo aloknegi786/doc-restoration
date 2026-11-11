@@ -17,3 +17,6 @@ data/*
 
 # Project archives
 *.zip
+
+# Visual debug QC overlays
+eval/results/qc_roi/
