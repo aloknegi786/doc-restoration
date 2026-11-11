@@ -1,0 +1,22 @@
+{
+  "channel": "gray",
+  "use_roi": false,
+  "roi_margin_frac": 0.015,
+  "roi_close_frac": 0.04,
+  "roi_downsample": 4,
+  "use_normalise": true,
+  "bg_sigma_frac": 0.1,
+  "bg_downsample": 4,
+  "use_clahe": false,
+  "clahe_grid": [
+    8,
+    8
+  ],
+  "clahe_clip": 2.0,
+  "window_rel": 0.05,
+  "k": 0.15,
+  "R": 128.0,
+  "use_cleanup": true,
+  "min_component_size": 15
+}
+

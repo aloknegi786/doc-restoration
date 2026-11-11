@@ -1,0 +1,19 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.DS_Store
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Large benchmark data (679 MB) - preserve splits & gitkeep
+data/*
+!data/splits.json
+!data/.gitkeep
+
+# Project archives
+*.zip

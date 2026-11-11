@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Restoration & Binarization Demo</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #eff6ff;
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid #bfdbfe;
+    }
+
+    .docs-link {
+      font-size: 0.875rem;
+      color: var(--muted);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .docs-link:hover { color: var(--primary); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f8fafc;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .dropzone-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    .dropzone-text {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .dropzone-text strong {
+      color: var(--primary);
+    }
+
+    .control-group {
+      margin-top: 18px;
+    }
+
+    label.control-label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      margin-top: 20px;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: #e2e8f0;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 650px) {
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .preview-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .image-box {
+      background: #0f172a;
+      border-radius: 8px;
+      min-height: 380px;
+      max-height: 540px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      max-height: 540px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .placeholder-text {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .actions-bar {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #ffffff;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .timing {
+      font-size: 0.75rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .error-banner {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>
+          Historical Document Binarizer
+          <span class="badge">Classical Pipeline</span>
+        </h1>
+        <p style="font-size: 0.875rem; color: var(--muted); margin-top: 2px;">
+          Uneven illumination correction &middot; Closing-based division &middot; Sauvola thresholding
+        </p>
+      </div>
+      <div>
+        <a href="/docs" target="_blank" class="docs-link">
+          API Documentation (Swagger) &rarr;
+        </a>
+      </div>
+    </header>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <div class="grid">
+      <!-- Left: Controls -->
+      <div class="card">
+        <h2 class="card-title">Document Input</h2>
+
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept="image/png, image/jpeg, image/bmp, image/tiff">
+          <div class="dropzone-icon">📄</div>
+          <div class="dropzone-text">
+            <strong>Click to upload</strong> or drag and drop<br>
+            BMP, JPEG, PNG, TIFF
+          </div>
+          <div id="fileInfo" style="margin-top: 8px; font-size: 0.8125rem; font-weight: 600; color: var(--primary);"></div>
+        </div>
+
+        <div style="margin-top: 12px; font-size: 0.8125rem; color: var(--muted); text-align: center;">
+          Or test with a sample document:
+          <div style="display: flex; gap: 6px; justify-content: center; margin-top: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary sample-btn" data-sample="dibco2017_sample_bleedthrough.png" style="padding: 4px 8px; font-size: 0.75rem; width: auto;">Bleed-through</button>
+            <button type="button" class="btn btn-secondary sample-btn" data-sample="dibco2018_sample_stained.png" style="padding: 4px 8px; font-size: 0.75rem; width: auto;">Stained Page</button>
+            <button type="button" class="btn btn-secondary sample-btn" data-sample="palm_leaf_sample.jpg" style="padding: 4px 8px; font-size: 0.75rem; width: auto;">Palm Leaf</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="channelSelect">Colour Channel</label>
+          <select id="channelSelect">
+            <option value="gray" selected>Grayscale (Luminance)</option>
+            <option value="lab_l">CIELAB L* (Lightness)</option>
+            <option value="pca">PCA 1st Component</option>
+            <option value="red">Red Channel</option>
+          </select>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label" title="Morphological closing division (strongly recommended)">
+            <input type="checkbox" id="chkNormalise" checked>
+            <span>Background Normalisation</span>
+          </label>
+          <label class="checkbox-label" title="Remove isolated speckles &lt; 15 px">
+            <input type="checkbox" id="chkCleanup" checked>
+            <span>Small-Component Cleanup</span>
+          </label>
+          <label class="checkbox-label" title="Restrict to document region (for palm leaves)">
+            <input type="checkbox" id="chkRoi">
+            <span>ROI Document Detection</span>
+          </label>
+          <label class="checkbox-label" title="Adaptive histogram equalisation">
+            <input type="checkbox" id="chkClahe">
+            <span>CLAHE Enhancement</span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary" id="btnBinarize" disabled>
+          <span>Run Binarization</span>
+        </button>
+      </div>
+
+      <!-- Right: Preview Area -->
+      <div class="card">
+        <div class="card-title">
+          <span>Live Comparison</span>
+          <span class="timing" id="timingText"></span>
+        </div>
+
+        <div class="preview-grid">
+          <!-- Left: Original -->
+          <div class="preview-panel">
+            <div class="preview-header">
+              <span class="preview-title">Original Scan</span>
+              <span id="origDims" style="font-size: 0.75rem; color: var(--muted);"></span>
+            </div>
+            <div class="image-box" id="origBox">
+              <span class="placeholder-text">Upload an image to start preview</span>
+              <img id="origImg" style="display: none;" alt="Original">
+            </div>
+          </div>
+
+          <!-- Right: Binarized -->
+          <div class="preview-panel">
+            <div class="preview-header">
+              <span class="preview-title">Binarized Mask</span>
+              <span id="binDims" style="font-size: 0.75rem; color: var(--muted);"></span>
+            </div>
+            <div class="image-box" id="binBox">
+              <span class="placeholder-text">Click "Run Binarization" to process</span>
+              <img id="binImg" style="display: none;" alt="Binarized">
+            </div>
+          </div>
+        </div>
+
+        <!-- Download Buttons -->
+        <div class="actions-bar">
+          <button class="btn btn-secondary" id="btnDownloadPng" style="width: auto;" disabled>
+            📥 Download Mask (.png)
+          </button>
+          <button class="btn btn-secondary" id="btnDownloadZip" style="width: auto;" disabled>
+            📦 Download All Stages (.zip)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const fileInfo = document.getElementById('fileInfo');
+    const btnBinarize = document.getElementById('btnBinarize');
+    const btnDownloadPng = document.getElementById('btnDownloadPng');
+    const btnDownloadZip = document.getElementById('btnDownloadZip');
+    const origImg = document.getElementById('origImg');
+    const binImg = document.getElementById('binImg');
+    const origBox = document.getElementById('origBox');
+    const binBox = document.getElementById('binBox');
+    const origDims = document.getElementById('origDims');
+    const binDims = document.getElementById('binDims');
+    const timingText = document.getElementById('timingText');
+    const errorBanner = document.getElementById('errorBanner');
+
+    let currentFile = null;
+    let binarizedBlob = null;
+
+    // Drag-and-drop
+    ['dragenter', 'dragover'].forEach(name => {
+      dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files.length) {
+        handleFileSelected(e.dataTransfer.files[0]);
+      }
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        handleFileSelected(e.target.files[0]);
+      }
+    });
+
+    // Sample buttons
+    document.querySelectorAll('.sample-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const sampleName = btn.dataset.sample;
+        btn.disabled = true;
+        const prevText = btn.textContent;
+        btn.textContent = 'Loading...';
+        try {
+          const resp = await fetch(`/samples/${sampleName}`);
+          if (!resp.ok) throw new Error('Sample not found');
+          const blob = await resp.blob();
+          const file = new File([blob], sampleName, { type: blob.type });
+          handleFileSelected(file);
+        } catch (err) {
+          errorBanner.textContent = `Could not load sample: ${err.message}`;
+          errorBanner.style.display = 'block';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = prevText;
+        }
+      });
+    });
+
+    function handleFileSelected(file) {
+      currentFile = file;
+      fileInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      btnBinarize.disabled = false;
+      errorBanner.style.display = 'none';
+
+      const url = URL.createObjectURL(file);
+      origImg.src = url;
+      origImg.style.display = 'block';
+      origBox.querySelector('.placeholder-text').style.display = 'none';
+
+      origImg.onload = () => {
+        origDims.textContent = `${origImg.naturalWidth} × ${origImg.naturalHeight} px`;
+      };
+
+      // Reset binarized preview
+      binImg.style.display = 'none';
+      binBox.querySelector('.placeholder-text').style.display = 'block';
+      binBox.querySelector('.placeholder-text').textContent = 'Click "Run Binarization" to process';
+      btnDownloadPng.disabled = true;
+      btnDownloadZip.disabled = true;
+      timingText.textContent = '';
+    }
+
+    function getQueryParams() {
+      const channel = document.getElementById('channelSelect').value;
+      const use_normalise = document.getElementById('chkNormalise').checked;
+      const use_cleanup = document.getElementById('chkCleanup').checked;
+      const use_roi = document.getElementById('chkRoi').checked;
+      const use_clahe = document.getElementById('chkClahe').checked;
+      return new URLSearchParams({ channel, use_normalise, use_cleanup, use_roi, use_clahe }).toString();
+    }
+
+    btnBinarize.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      btnBinarize.disabled = true;
+      btnBinarize.innerHTML = '<span class="spinner"></span> Processing...';
+      timingText.textContent = '';
+      errorBanner.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append('file', currentFile);
+
+      const qs = getQueryParams();
+      const t0 = performance.now();
+
+      try {
+        const resp = await fetch(`/binarize?${qs}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server error: ${resp.status}`);
+        }
+
+        const blob = await resp.blob();
+        binarizedBlob = blob;
+        const dt = (performance.now() - t0).toFixed(0);
+
+        const url = URL.createObjectURL(blob);
+        binImg.src = url;
+        binImg.style.display = 'block';
+        binBox.querySelector('.placeholder-text').style.display = 'none';
+
+        binImg.onload = () => {
+          binDims.textContent = `${binImg.naturalWidth} × ${binImg.naturalHeight} px`;
+        };
+
+        timingText.textContent = `Completed in ${dt} ms`;
+        btnDownloadPng.disabled = false;
+        btnDownloadZip.disabled = false;
+      } catch (err) {
+        errorBanner.textContent = `Error: ${err.message}`;
+        errorBanner.style.display = 'block';
+      } finally {
+        btnBinarize.disabled = false;
+        btnBinarize.innerHTML = '<span>Run Binarization</span>';
+      }
+    });
+
+    // Download PNG
+    btnDownloadPng.addEventListener('click', () => {
+      if (!binarizedBlob) return;
+      const a = document.createElement('a');
+      const stem = currentFile.name.replace(/\.[^/.]+$/, "");
+      a.href = URL.createObjectURL(binarizedBlob);
+      a.download = `${stem}_binary.png`;
+      a.click();
+    });
+
+    // Download Stages ZIP
+    btnDownloadZip.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      btnDownloadZip.disabled = true;
+      btnDownloadZip.textContent = 'Preparing ZIP...';
+
+      const formData = new FormData();
+      formData.append('file', currentFile);
+      const qs = getQueryParams();
+
+      try {
+        const resp = await fetch(`/binarize/stages?${qs}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+        const blob = await resp.blob();
+        const a = document.createElement('a');
+        const stem = currentFile.name.replace(/\.[^/.]+$/, "");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${stem}_stages.zip`;
+        a.click();
+      } catch (err) {
+        alert(`Failed to download stages: ${err.message}`);
+      } finally {
+        btnDownloadZip.disabled = false;
+        btnDownloadZip.textContent = '📦 Download All Stages (.zip)';
+      }
+    });
+  </script>
+</body>
+</html>
+
