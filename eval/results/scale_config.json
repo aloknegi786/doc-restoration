@@ -1,0 +1,8 @@
+{
+  "factor": 7.5,
+  "floor": 15,
+  "calibrated_from": "median(frozen_window_px / stroke_width) over dibco2018+2019 tuning set",
+  "factor_spread_std": 5.173665224823737,
+  "factor_spread_mean": 8.84708374412712,
+  "note": "This factor is a default, not re-tuned against 2017 or palm. If it performs poorly on those, that is a reported finding, not a reason to adjust it after seeing their scores."
+}
