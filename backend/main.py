@@ -20,11 +20,9 @@ Demo: run the server and visit http://localhost:8000/docs for Swagger UI.
 Usage:
     uvicorn backend.main:app --reload --port 8000
 
-Configuration: on startup the app loads the frozen Sauvola config from
-configs/sauvola_config.json (window_rel, k).  Any field in PipelineConfig
-can be overridden via query parameters on each endpoint (e.g. ?channel=lab_l
-or ?use_clahe=false).  Frozen parameters (window_rel, k) cannot be changed
-through the API — only via the config file — to prevent accidental retuning.
+Configuration: on startup the app loads configuration from
+configs/pipeline_config.json. Any stage field in PipelineConfig can be overridden
+via query parameters on each endpoint (e.g. ?channel=lab_l or ?use_clahe=false).
 """
 from __future__ import annotations
 
@@ -51,22 +49,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from docbin.config import PipelineConfig
 from docbin.pipeline import run as pipeline_run
 
-# ---------------------------------------------------------------------------
-# Startup: load frozen config
-# ---------------------------------------------------------------------------
-
 _PIPELINE_CONFIG = Path("configs/pipeline_config.json")
-_SAUVOLA_CONFIG  = Path("configs/sauvola_config.json")
-_SCALE_CONFIG    = Path("configs/scale_config.json")
 
 
 def _load_default_config() -> PipelineConfig:
     if _PIPELINE_CONFIG.exists():
         return PipelineConfig.from_json(_PIPELINE_CONFIG)
-    if _SAUVOLA_CONFIG.exists():
-        sc = json.loads(_SAUVOLA_CONFIG.read_text())
-        return PipelineConfig(window_rel=sc["window_rel"], k=sc["k"])
-    # Fallback to dataclass defaults (un-tuned) — still functional for demo
     return PipelineConfig()
 
 
@@ -82,10 +70,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def _decode_image(data: bytes) -> np.ndarray:
     arr = np.frombuffer(data, dtype=np.uint8)
@@ -135,10 +119,6 @@ def _build_cfg(
         use_cleanup=use_cleanup,
     )
 
-
-# ---------------------------------------------------------------------------
-# Routes
-# ---------------------------------------------------------------------------
 
 _STATIC_INDEX = Path(__file__).resolve().parent / "static" / "index.html"
 _SAMPLE_DIR   = Path(__file__).resolve().parent.parent / "sample_images"
@@ -232,26 +212,19 @@ async def binarize_stages(
 
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        # Original colour image
         _, orig_buf = cv2.imencode(".png", bgr)
         zf.writestr("00_original.png", orig_buf.tobytes())
 
-        # Grayscale channel
         zf.writestr("01_channel.png", _gray_to_png(stages["channel"]))
 
-        # ROI overlay (green fill on original)
         zf.writestr("02_roi.png", _roi_overlay_png(bgr, stages["roi"]))
 
-        # Normalised (grayscale)
         zf.writestr("03_normalised.png", _gray_to_png(stages["normalised"]))
 
-        # CLAHE output
         zf.writestr("04_clahe.png", _gray_to_png(stages["clahe"]))
 
-        # Sauvola binary (before cleanup)
         zf.writestr("05_binarized.png", _bool_mask_to_png(stages["binarized"]))
 
-        # Final cleaned output
         zf.writestr("06_cleaned.png", _bool_mask_to_png(stages["cleaned"]))
 
     buf.seek(0)

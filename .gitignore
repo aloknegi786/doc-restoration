@@ -10,13 +10,10 @@ __pycache__/
 venv/
 ENV/
 
-# Large benchmark data (679 MB) - preserve splits & gitkeep
-data/*
-!data/splits.json
-!data/.gitkeep
+# Build artifacts
+build/
+dist/
+*.egg-info/
 
 # Project archives
 *.zip
-
-# Visual debug QC overlays
-eval/results/qc_roi/
