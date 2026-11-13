@@ -13,9 +13,5 @@ def remove_small_components(
         binary, connectivity=8
     )
     keep = np.zeros(n, dtype=bool)
-    keep[0] = False
-    for label in range(1, n):
-        if stats[label, cv2.CC_STAT_AREA] >= min_size:
-            keep[label] = True
-
-    return keep[labels].astype(bool)
+    keep[1:] = stats[1:, cv2.CC_STAT_AREA] >= min_size
+    return keep[labels]
